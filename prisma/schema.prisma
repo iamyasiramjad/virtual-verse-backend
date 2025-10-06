@@ -1,0 +1,161 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//    Admin
+// -------------
+model Admin {
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  passwordHash String
+}
+
+
+//    Family and Students
+// --------------------------
+// --------------------------
+model Family {
+  id           Int @id @default(autoincrement())
+  familyLink   String @unique @default(cuid())
+  passwordHash String
+  familyName   String
+  createdAt DateTime @default(now())
+
+  students    Student[]
+  feePayments FeePayment[]
+}
+
+model StudentProgress {
+  id          Int      @id @default(autoincrement())
+  category    String   
+  title       String
+  notes       String?
+  status      ProgressStatus @default(NOT_STARTED)
+
+  revisionCount Int @default(0)
+
+  updatedAt   DateTime @updatedAt
+
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  @@unique([studentId, category, title])
+}
+
+model Student {
+  id        Int     @id @default(autoincrement())
+  name      String
+  age       Int?
+  avatarUrl String?
+
+  status      StudentStatus @default(READING)
+  enrolledAt  DateTime      @default(now())
+  country     String?
+  tuitionFee  Decimal?
+  currency    String?
+
+  familyId  Int
+  family    Family  @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  earnedBadges    StudentBadge[]
+  quizAssignments StudentQuizAssignment[]
+  progressItems   StudentProgress[]
+  completionRecords CompletionRecord[]
+}
+
+model CompletionRecord {
+  id Int @id @default(autoincrement())
+  completedItem String
+  completedAt   DateTime @default(now())
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+//   App Content
+// -----------------
+// -----------------
+model Badge {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String
+  imageUrl    String?
+  awardedTo StudentBadge[]
+}
+
+model StudentBadge {
+  id       Int      @id @default(autoincrement())
+  earnedAt DateTime @default(now())
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  badgeId Int
+  badge   Badge   @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  @@unique([studentId, badgeId])
+}
+
+model LibraryResource {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  fileUrl     String
+  category    String
+  createdAt   DateTime @default(now())
+}
+
+model Quiz {
+  id    Int    @id @default(autoincrement())
+  title String
+  content Json?
+  assignments StudentQuizAssignment[]
+}
+
+model StudentQuizAssignment {
+  id     Int        @id @default(autoincrement())
+  status QuizStatus @default(PENDING)
+  score  Int?
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  quizId Int
+  quiz   Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  @@unique([studentId, quizId])
+}
+
+
+//    Finalcial
+//  ----------------
+//  ----------------
+model FeePayment {
+  id Int @id @default(autoincrement())
+  year Int
+  month Int
+  paidAt DateTime @default(now())
+  familyId Int
+  family   Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  @@unique([familyId, year, month])
+}
+
+//    Enums
+// ------------
+// ------------
+enum QuizStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  MEMORIZED
+  REVISION
+}
+
+enum StudentStatus {
+  READING // Active student
+  PAUSED
+  COMPLETED // Graduated
+  LEFT_UNCOMPLETED
+}
