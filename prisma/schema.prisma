@@ -37,7 +37,11 @@ model StudentProgress {
   title       String
   notes       String?
   status      ProgressStatus @default(NOT_STARTED)
+
+  revisionCount Int @default(0)
+
   updatedAt   DateTime @updatedAt
+
   studentId Int
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   @@unique([studentId, category, title])
@@ -48,11 +52,27 @@ model Student {
   name      String
   age       Int?
   avatarUrl String?
+
+  status      StudentStatus @default(READING)
+  enrolledAt  DateTime      @default(now())
+  country     String?
+  tuitionFee  Decimal?
+  currency    String?
+
   familyId  Int
   family    Family  @relation(fields: [familyId], references: [id], onDelete: Cascade)
   earnedBadges    StudentBadge[]
   quizAssignments StudentQuizAssignment[]
   progressItems   StudentProgress[]
+  completionRecords CompletionRecord[]
+}
+
+model CompletionRecord {
+  id Int @id @default(autoincrement())
+  completedItem String
+  completedAt   DateTime @default(now())
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 //   App Content
@@ -131,4 +151,11 @@ enum ProgressStatus {
   IN_PROGRESS
   MEMORIZED
   REVISION
+}
+
+enum StudentStatus {
+  READING // Active student
+  PAUSED
+  COMPLETED // Graduated
+  LEFT_UNCOMPLETED
 }
