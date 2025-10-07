@@ -8,6 +8,7 @@ import { FamiliesModule } from './families/families.module';
 import { StudentsModule } from './students/students.module';
 import { LibraryResourcesModule } from './library-resources/library-resources.module';
 import { SupabaseModule } from './supabase/supabase.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SupabaseModule } from './supabase/supabase.module';
     StudentsModule,
     LibraryResourcesModule,
     SupabaseModule,
+    QuizzesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
