@@ -65,6 +65,7 @@ model Student {
   quizAssignments StudentQuizAssignment[]
   progressItems   StudentProgress[]
   completionRecords CompletionRecord[]
+  resourceAssignments StudentResourceAssignment[]
 }
 
 model CompletionRecord {
@@ -73,6 +74,20 @@ model CompletionRecord {
   completedAt   DateTime @default(now())
   studentId Int
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model StudentResourceAssignment {
+  id Int @id @default(autoincrement())
+
+  assignedAt DateTime @default(now())
+ 
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  resourceId Int
+  resource   LibraryResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, resourceId])
 }
 
 //   App Content
@@ -103,6 +118,7 @@ model LibraryResource {
   fileUrl     String
   category    String
   createdAt   DateTime @default(now())
+  assignments StudentResourceAssignment[]
 }
 
 model Quiz {
